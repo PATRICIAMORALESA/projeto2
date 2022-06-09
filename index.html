@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Concorrência</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,200;0,400;0,600;1,200;1,400;1,600&display=swap"
+      rel="stylesheet"
+    />
+</head>
+<body>
+    <div>
+    <div class="row">
+        <div class="card-principal">
+          <h2>Definir protocolo de impasse</h2>
+          <button>Desabilitado</button>
+          <button>Wait-die</button>
+          <button>Wound-wait</button>
+        </div>
+    </div>
+    <div>
+        <div class="row">
+            <div class="card-transacoes">
+            <h2>Definir Transação</h2>
+                <label>Transação:</label><br>
+                <input type="radio" name="transacao" id="transacao-1">Transação 1 
+                <input type="radio" name="transacao" id="transacao-2">Transação 2
+                <input type="radio" name="transacao" id="transacao-3">Transação 3
+                <br>
+                <br>
+                <label>Ação:</label><br>
+                    <form method="post" action="opcoes.php">
+                        <select name="acoes">
+                        <option value="ReadLock(X)">ReadLock(X)</option>
+                        <option value="ReadLock(Y)">ReadLock(Y)</option>
+                        <option value="ReadLock(Z)">ReadLock(Z)</option>
+                        <option value="WriteLock(X)">WriteLock(X)</option>
+                        <option value="WriteLock(Y)">WriteLock(Y)</option>
+                        <option value="WriteLock(Z)">WriteLock(Z)</option>
+                        <option value="ReadItem(X)">ReadItem(X)</option>
+                        <option value="ReadItem(Y)">ReadItem(Y)</option>
+                        <option value="ReadItem(Z)">ReadItem(Z)</option>
+                        <option value="WriteItem(X)">WriteItem(X)</option>
+                        <option value="WriteItem(Y)">WriteItem(Y)</option>
+                        <option value="WriteItem(Z)">WriteItem(Z)</option>
+                        <option value="Unlock(X)">Unlock(X)</option>
+                        <option value="Unlock(Y)">Unlock(Y)</option>
+                        <option value="Unlock(Z)">Unlock(Z)</option>
+                        <option value="End">End</option>
+                        </select>
+                        <input type="submit" value="Enviar" />
+                        <input type="reset" value="Cancelar" />
+                    </form>
+            </div>
+            <div class="card-transacoes">
+                <h2>Transações Bloqueadas</h2>
+                    <div class="container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item de dado</th>
+                                    <th>Bloqueio</th>
+                                    <th>Transações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>X</td>
+                                    <td>ReadLock</td>
+                                    <td>1</td>
+                                </tr>
+                                <tr>
+                                    <td>Y</td>
+                                    <td>WriteLock</td>
+                                    <td>2</td>
+                                </tr>
+                            </tbody>
+                        </table>       
+                    </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="card-transacoes">
+            <h2>Transações em espera</h2>
+            <div class="container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Transação 1</td>
+                        </tr>
+                        <tr>
+                            <td>Transação 2</td>
+                        </tr>
+                    </tbody>
+                </table>       
+            </div>
+            </div>
+            <div class="card-transacoes">
+            <h2>Transações Ativas</h2>
+            <div class="container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Transação 3</td>
+                        </tr>
+                        <tr>
+                            <td>Transação 4</td>
+                        </tr>
+                    </tbody>
+                </table>       
+            </div>
+          </div>
+        </div>
+      </div>
+</body>
+</html>

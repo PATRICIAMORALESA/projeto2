@@ -1,0 +1,58 @@
+body {
+    font-family: "Poppins", sans-serif;
+    background-color: #fafafa;
+  }
+   
+  .row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card-principal {
+    border-radius: 5px;
+    box-shadow: 7px 7px 13px 0px rgba(50, 50, 50, 0.22);
+    padding: 10px 30px 30px 30px;
+    margin: 10px;
+    width: 400px;
+  }
+
+  .card-transacoes {
+    border-radius: 5px;
+    box-shadow: 7px 7px 13px 0px rgba(50, 50, 50, 0.22);
+    padding: 10px 30px 30px 30px;
+    margin: 10px;
+    width: 500px;
+    height: 200px;
+  }
+
+  h2{
+    font-size: 16px;
+  }
+
+  button {
+        background: green;
+        border-radius: 5px;
+        border: none;
+        color: white;
+        display: inline;
+        font-family: "Poppins", sans-serif;
+        font-weight: bold;
+        letter-spacing: 1px;
+        margin-right: 1rem;
+        padding: .5rem .6125rem;
+    }
+
+table{
+    border-spacing: 20px;
+}
+
+button:hover {
+        background: darkgreen;
+        cursor: pointer;
+  }
+   
+  .card p {
+    color: #a3a5ae;
+    font-size: 16px;
+  }
