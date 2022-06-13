@@ -16,9 +16,9 @@
     <div class="row">
         <div class="card-principal">
           <h2>Definir protocolo de impasse</h2>
-          <button>Desabilitado</button>
-          <button>Wait-die</button>
-          <button>Wound-wait</button>
+          <button id="desabilitado">Desabilitado</button>
+          <button id="waitDie">Wait-die</button>
+          <button id="woundWait">Wound-wait</button>
         </div>
     </div>
     <div>
@@ -34,31 +34,31 @@
                 <label>Ação:</label><br>
                     <form method="post" action="opcoes.php">
                         <select name="acoes">
-                        <option value="ReadLock(X)">ReadLock(X)</option>
-                        <option value="ReadLock(Y)">ReadLock(Y)</option>
-                        <option value="ReadLock(Z)">ReadLock(Z)</option>
-                        <option value="WriteLock(X)">WriteLock(X)</option>
-                        <option value="WriteLock(Y)">WriteLock(Y)</option>
-                        <option value="WriteLock(Z)">WriteLock(Z)</option>
-                        <option value="ReadItem(X)">ReadItem(X)</option>
-                        <option value="ReadItem(Y)">ReadItem(Y)</option>
-                        <option value="ReadItem(Z)">ReadItem(Z)</option>
-                        <option value="WriteItem(X)">WriteItem(X)</option>
-                        <option value="WriteItem(Y)">WriteItem(Y)</option>
-                        <option value="WriteItem(Z)">WriteItem(Z)</option>
-                        <option value="Unlock(X)">Unlock(X)</option>
-                        <option value="Unlock(Y)">Unlock(Y)</option>
-                        <option value="Unlock(Z)">Unlock(Z)</option>
-                        <option value="End">End</option>
+                        <option id="readLock(X)" value="ReadLock(X)">ReadLock(X)</option>
+                        <option id="readLock(Y)" value="ReadLock(Y)">ReadLock(Y)</option>
+                        <option id="readLock(Z)" value="ReadLock(Z)">ReadLock(Z)</option>
+                        <option id="writeLock(X)" value="WriteLock(X)">WriteLock(X)</option>
+                        <option id="writeLock(Y)" value="WriteLock(Y)">WriteLock(Y)</option>
+                        <option id="writeLock(Z)" value="WriteLock(Z)">WriteLock(Z)</option>
+                        <option id="readItem(X)" value="ReadItem(X)">ReadItem(X)</option>
+                        <option id="readItem(Y)" value="ReadItem(Y)">ReadItem(Y)</option>
+                        <option id="readItem(Z)" value="ReadItem(Z)">ReadItem(Z)</option>
+                        <option id="writeItem(X)" value="WriteItem(X)">WriteItem(X)</option>
+                        <option id="writeItem(Y)" value="WriteItem(Y)">WriteItem(Y)</option>
+                        <option id="writeItem(Z)" value="WriteItem(Z)">WriteItem(Z)</option>
+                        <option id="unlock(X)" value="Unlock(X)">Unlock(X)</option>
+                        <option id="unlock(Y)" value="Unlock(Y)">Unlock(Y)</option>
+                        <option id="unlock(Z)" value="Unlock(Z)">Unlock(Z)</option>
+                        <option id="end" value="End">End</option>
                         </select>
-                        <input type="submit" value="Enviar" />
-                        <input type="reset" value="Cancelar" />
+                        <input type="submit" id="enviar" value="Enviar" />
+                        <input type="reset" id="cancelar" value="Cancelar" />
                     </form>
             </div>
             <div class="card-transacoes">
                 <h2>Transações Bloqueadas</h2>
                     <div class="container">
-                        <table>
+                        <table id="tableTransacoesBloqueadas">
                             <thead>
                                 <tr>
                                     <th>Item de dado</th>
@@ -86,7 +86,7 @@
             <div class="card-transacoes">
             <h2>Transações em espera</h2>
             <div class="container">
-                <table>
+                <table id="tableTransacoesEspera">
                     <thead>
                         <tr>
                             <th></th>
@@ -106,7 +106,7 @@
             <div class="card-transacoes">
             <h2>Transações Ativas</h2>
             <div class="container">
-                <table>
+                <table id="tableTransacoesAtivas">
                     <thead>
                         <tr>
                             <th></th>
