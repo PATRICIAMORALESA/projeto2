@@ -23,7 +23,15 @@ body {
     padding: 10px 30px 30px 30px;
     margin: 10px;
     width: 500px;
-    height: 200px;
+    height: 250px;
+  }
+
+  .radio-transacoes {
+    padding-top: 20px;
+  }
+
+  .select-acoes {
+    margin-right: 20px;
   }
 
   h2{
