@@ -1,21 +1,9 @@
-// Itens de dados X, Y e Z
-
-// id="readLock(X)" Ler e bloquear de forma compartilhada o item de dado X - Nesse caso pode ler, mas não pode escrever, ou seja se outro tentar acessar, permite
-
-// id="writeLock(X)" Ler/Escrever e bloquear de forma exclusiva o item de dado X - Nesse caso pode tanto ler como escrever
-
-// Nesse caso de bloqueio exclusivo se outra transação tentar acessar, deve exibir modal "não foi possível, pois o item está bloqueado"
-
-// id="readItem(X)" Ler o item de dado X, não realiza o bloqueio, somente leitura
-
-// id="unlock(X)" Desbloquear o item de dado X
-
-// Exibir as transações bloqueadas na tabela id="tableTransacoesBloqueadas"
-// Exibir as transações ativas na tabela id="tableTransacoesAtivas"
-// Exibir as transações em espera id="tableTransacoesEspera"
-
-// Segunda etapa de implementação Controle de Impasse
-// Wait-Die e Wound-awai
+function TransacaoEspera(transacao, dado, acao) {
+    this.transacao = transacao;
+    this.dado = dado;
+    this.acao = acao;
+    this.timestamp = timestamps[transacao - 1];
+}
 
 let X = {
     nome: "X",
@@ -43,48 +31,88 @@ let Z = {
 
 let timestamps = [0, 0, 0];
 
+let transacoesEmEspera = [];
+
 let waitDie = false;
 let woundWait = false;
 
+let dados = [X, Y, Z];
+
+function restartarTransacao(transacao) {
+    dados.forEach(element => {
+        if(element.transBloqEscri == transacao) {
+            element.bloqueio = "Unlock";
+            element.transBloqEscri = null;
+        } else if (element.transBloqLeit.includes(transacao)) {
+            if (element.contador == 1) {
+                element.bloqueio = "Unlock";
+            } 
+            var pos = element.transBloqLeit.indexOf(transacao);
+            element.transBloqLeit.splice(pos, 1);
+            element.contador = element.contador - 1;
+        }
+
+        console.log(element.nome + ": " + element.bloqueio + ", bloqueando escrita: " + element.transBloqEscri + ", bloqueando leitura: " + element.transBloqLeit.toString() + ", numero trans: " + element.contador);
+        updateCardTransBloq(element);
+    });
+}
 
 function addTransacaoAtiva(transacao) {
     switch (transacao) {
         case "1":
             document.getElementById('ativa1').style.color = "black";
-            timestamps[0] = new Date().getTime();
+            if (timestamps[0] == 0) {
+                timestamps[0] = new Date().getTime();
+            }
+            document.getElementById('ativa1').textContent = "Transação 1 - TS: " + timestamps[0];
             break;
         case "2":
             document.getElementById('ativa2').style.color = "black";
-            timestamps[1] = new Date().getTime();
+            if (timestamps[1] == 0) {
+                timestamps[1] = new Date().getTime();
+            }
+            document.getElementById('ativa2').textContent = "Transação 2 - TS: " + timestamps[1];
             break;
         case "3":
             document.getElementById('ativa3').style.color = "black";
-            timestamps[2] = new Date().getTime();
+            if (timestamps[2] == 0) {
+                timestamps[2] = new Date().getTime();
+            }
+            document.getElementById('ativa3').textContent = "Transação 3 - TS: " + timestamps[2];
+            break;
         default:
             break;
     }
 
-    console.log("Timestamps: " + timestamps[0] + ", " + timestamps[1] + ", " + timestamps[2]);
 }
 
-function addTransacaoEmEspera(transacao) {
-    switch (transacao) {
+function addTransacaoEmEspera(transacaoEspera) {
+    switch (transacaoEspera.transacao) {
         case "1":
-            document.getElementById('espera1').style.color = "black";
+            if (waitDie || woundWait) {
+                document.getElementById('espera1').style.color = "black";
+            }
             if (timestamps[0] == 0) timestamps[0] = new Date().getTime();
+            document.getElementById('espera1').textContent = "Transação 1 - TS: " + timestamps[0];
             break;
         case "2":
-            document.getElementById('espera2').style.color = "black";
+            if (waitDie || woundWait) {
+                document.getElementById('espera2').style.color = "black";
+            }
             if (timestamps[1] == 0) timestamps[1] = new Date().getTime();
+            document.getElementById('espera2').textContent = "Transação 2 - TS: " + timestamps[1];
             break;
         case "3":
-            document.getElementById('espera3').style.color = "black";
+            if (waitDie || woundWait) {
+                document.getElementById('espera3').style.color = "black";
+            }
             if (timestamps[2] == 0) timestamps[2] = new Date().getTime();
+            document.getElementById('espera3').textContent = "Transação 3 - TS: " + timestamps[2];
         default:
             break;
     }
-
-    console.log("Timestamps: " + timestamps[0] + ", " + timestamps[1] + ", " + timestamps[2]);
+    
+    transacoesEmEspera.push(transacaoEspera);
 }
 
 function removeTransacao(transacao) {
@@ -124,42 +152,90 @@ function updateCardTransBloq (dado) {
     }
 }
 
+function compararTS (ts1, ts2) {
+    return ts1-ts2;
+}
+
 function unlock(dado, transacao) {
     console.log("UNLOCK(" + dado.nome + ")");
     if (dado.bloqueio == "WriteLock" && dado.transBloqEscri == transacao) {
         dado.bloqueio = "Unlock";
         dado.transBloqEscri = null;
 
-        updateCardTransBloq(dado);
+        document.getElementById('resultado').textContent = "Transação " + transacao + ": OP UNLOCK(" + dado.nome + ") - SUCESSO";
+        setTimeout(() => {
+            document.getElementById('resultado').textContent = "Checando transações pausadas...";
+        }, 2000);
+        var find = false;
+        var transacaoesp;
+        if (transacoesEmEspera.length > 0) {
+            var i = 0;
+            while (i < transacoesEmEspera.length) {
+                if(transacoesEmEspera[i].dado == dado) { 
+                    transacaoesp = transacoesEmEspera[i];
+                    find = true;
+                    break;
+                }
+                i = i + 1;
+            }
 
-        console.log(dado.nome + ": STATUS - " + dado.bloqueio);
-        console.log("liberar transações em espera");
+            setTimeout(() => {
+                if(find) {
+                    var pos = transacoesEmEspera.indexOf(transacaoesp);
+                    transacoesEmEspera.splice(pos, 1);
+                    setTimeout(() => {
+                        checkAcaoSelecionada(transacaoesp.acao.toString(), transacaoesp.transacao.toString());
+                    }, 1000);
+                }
+            }, 2000);
+        } else {
+            setInterval(() => {
+                document.getElementById('resultado').textContent = "Nenhuma transação encontrada";
+            }, 4000);
+        }
 
-        //liberaTransacoes(dado);
-        //checar se o array transacaoespera esta vazio, se n tiver:
-            //exibe protocolo adotado
-            //restarta transacao em questao
-        //desperta quem ta esperando
     } else if (dado.bloqueio == "ReadLock" && (dado.transBloqLeit.indexOf(transacao) > -1)) {
         dado.contador = dado.contador - 1;
         var pos = dado.transBloqLeit.indexOf(transacao);
         dado.transBloqLeit.splice(pos, 1);
 
-        console.log(dado.nome + ": STATUS - " + dado.bloqueio + " / N. TRANS. LENDO: " + dado.contador);
-
         if (dado.contador == 0) {
             dado.bloqueio = "Unlock";
 
-            console.log(dado.nome + ": STATUS - " + dado.bloqueio + " / N. TRANS. LENDO: " + dado.contador);
-            console.log("liberar transações em espera");
-            //liberaTransacoes(dado);
-            //checar se o array transacaoespera esta vazio, se n tiver:
-                //exibe protocolo adotado
-                //restarta transacao em questao
-            //desperta quem ta esperando
+            document.getElementById('resultado').textContent = "Transação " + transacao + ": OP UNLOCK(" + dado.nome + ") - SUCESSO";
+            setTimeout(() => {
+                document.getElementById('resultado').textContent = "Checando transações pausadas...";
+            }, 2000);
+            var find = false;
+            var transacaoesp;
+            if (transacoesEmEspera.length > 0) {
+                var i = 0;
+                while (i < transacoesEmEspera.length) {
+                    if(transacoesEmEspera[i].dado == dado) { 
+                        transacaoesp = transacoesEmEspera[i];
+                        find = true;
+                        break;
+                    }
+                    i = i + 1;
+                }
+
+                setTimeout(() => {
+                    if(find) {
+                        var pos = transacoesEmEspera.indexOf(transacaoesp);
+                        transacoesEmEspera.splice(pos, 1);
+                        setTimeout(() => {
+                            checkAcaoSelecionada(transacaoesp.acao.toString(), transacaoesp.transacao.toString());
+                        }, 1000);
+                    } 
+                }, 2000);
+            }  else {
+                setInterval(() => {
+                    document.getElementById('resultado').textContent = "Nenhuma transação encontrada";
+                }, 4000);
+            }  
         }
     } else {
-        console.log("Op não realizada, pois transação " + transacao + " não possui nenhum bloqueio sobre o dado " + dado.nome);
+        document.getElementById('resultado').textContent = "Operação não realizada: transação " + transacao + " não possui bloqueio sobre o dado " + dado.nome;
     }   
 
     updateCardTransBloq(dado);
@@ -174,54 +250,66 @@ function readLock(dado, transacao) {
 
         addTransacaoAtiva(transacao);
 
-        console.log(dado.nome + ": STATUS - " + dado.bloqueio + " / N. TRANS. LENDO: " + dado.contador + " / LISTA TRANS LENDO: " + dado.transBloqLeit.toString()
-                                                                                                       + " / LISTA TRANS ESCREVENDO: " + dado.transBloqEscri);
-
+        document.getElementById('resultado').textContent = "Transação " + transacao + ": OP READ-LOCK(" + dado.nome + ") - SUCESSO";
     } else if (dado.bloqueio == "ReadLock" && (dado.transBloqLeit.indexOf(transacao) == -1)) {
         dado.contador = dado.contador + 1;
         dado.transBloqLeit.push(transacao);
         addTransacaoAtiva(transacao);
 
-        console.log(dado.nome + ": STATUS - " + dado.bloqueio + " / N. TRANS. LENDO: " + dado.contador + " / LISTA TRANS LENDO: " + dado.transBloqLeit.toString()
-                                                                                                       + " / LISTA TRANS ESCREVENDO: " + dado.transBloqEscri);
+        document.getElementById('resultado').textContent = "Transação " + transacao + ": OP READ-LOCK(" + dado.nome + ") - SUCESSO";
+    } else if (dado.bloqueio == "WriteLock"){
+        if (dado.transBloqEscri == transacao) {
 
-    } else if (dado.bloqueio == "WriteLock" && dado.transBloqEscri == transacao){
+            dado.transBloqEscri == null;
 
-        console.log(dado.nome + ": STATUS ANTERIOR - " + dado.bloqueio + " / N. TRANS. LENDO: " + dado.contador + " / LISTA TRANS LENDO: " + dado.transBloqLeit.toString()
-                                                                                                       + " / LISTA TRANS ESCREVENDO: " + dado.transBloqEscri);
-        dado.bloqueio = "ReadLock"
-        dado.transBloqLeit == null;
-        dado.transBloqLeit.ṕush(transacao);
-    
-        console.log(dado.nome + ": STATUS POSTERIOR - " + dado.bloqueio + " / N. TRANS. LENDO: " + dado.contador + " / LISTA TRANS LENDO: " + dado.transBloqLeit.toString()
-                                                                                                       + " / LISTA TRANS ESCREVENDO: " + dado.transBloqEscri);
-    } else if (dado.bloqueio == "WriteLock" && dado.transBloqEscri != transacao && (dado.transBloqLeit.indexOf(transacao) == -1)) { 
-        if (waitDie) {
-            console.log("Protocolo Wait-Die")
-            if (timestamps[transacao - 1] < timestamps[dado.transBloqEscri - 1]) {
-                console.log("Transação " + transacao + " em espera");
-                addTransacaoEmEspera(transacao);
+            dado.bloqueio = "ReadLock"
+            dado.transBloqLeit.push(transacao);
+            dado.contador = dado.contador + 1;
+        
+            document.getElementById('resultado').textContent = "Transação " + transacao + ": OP READ-LOCK(" + dado.nome + ") DOWNGRADE - SUCESSO";
+        } else { 
+            if (waitDie) {
+                if (timestamps[transacao - 1] < timestamps[dado.transBloqEscri - 1]) {
+                    addTransacaoEmEspera(new TransacaoEspera(transacao, dado, "ReadLock(" + dado.nome + ")"));
+                    document.getElementById('resultado').textContent = "WAIT-DIE: Transação " + transacao + " com TS = " + timestamps[transacao-1] + " em espera";
+                } else {
+                    restartarTransacao(transacao);
+                    removeTransacao(transacao);
+                    document.getElementById('resultado').textContent = "WAIT-DIE: Transação " + transacao + " com TS = " + timestamps[transacao-1] + " restartada";
+                }
+            } else if (woundWait) {
+                if (timestamps[transacao - 1] < timestamps[dado.transBloqLeit]) {
+                    restartarTransacao(transacao);
+                    removeTransacao(transacao);
+                    document.getElementById('resultado').textContent = "WOUND-WAIT: Transação " + transacao + " com TS = " + timestamps[transacao-1] + " restartada";
+                } else {
+                    addTransacaoEmEspera(new TransacaoEspera(transacao, dado, "ReadLock(" + dado.nome + ")"));
+                    document.getElementById('resultado').textContent = "WOUND-WAIT: Transação " + transacao + " com TS = " + timestamps[transacao-1] + " em espera";
+                }
             } else {
-                console.log("Transação " + transacao + " restartada");
-                //libera o que ela ta bloqueando e encerra
+                if ( checarDeadlock(dado)) {
+                    document.getElementById('resultado').textContent = "NO-PROTOCOL: DEADLOCK";
+                    addTransacaoEmEspera(new TransacaoEspera(transacao, dado, "ReadLock(" + dado.nome + ")"));
+                } else {
+                    document.getElementById('resultado').textContent = "Operação não realizada";
+                    addTransacaoEmEspera(new TransacaoEspera(transacao, dado, "ReadLock(" + dado.nome + ")"));
+                }  
             }
-        } else if (woundWait) {
-            console.log("Protocolo Wound-Wait")
-            if (timestamps[transacao - 1] < timestamps[dado.transBloqLeit]) {
-                console.log("Transação " + dado.transBloqEscri + " restartada");
-            } else {
-                console.log("Transação " + transacao + " em espera");
-                addTransacaoEmEspera(transacao);
-            }
-        } else {
-            //add alerta de deadlock
-            console.log('NOVA TRANSACAO EM ESPERA');
-            addTransacaoEmEspera(transacao);
         }
-        //criar array salvando um novo objeto transacaoespera, q tem: dado, transacao, timestamp e operacao
-    }
+    } 
 
     updateCardTransBloq(dado);
+}
+
+function checarDeadlock(dado) {
+    console.log('checar deadlock');
+    var res = false;
+    transacoesEmEspera.forEach(element => {
+        if (element.transacao == dado.transBloqEscri || dado.transBloqLeit.indexOf(element.transacao) > -1) {
+            res = true;
+        }
+    });
+    return res;
 }
 
 function writeLock(dado, transacao) {
@@ -229,76 +317,79 @@ function writeLock(dado, transacao) {
     if (dado.bloqueio == "Unlock") {
         dado.bloqueio = "WriteLock";
         dado.transBloqEscri = transacao;
+
         addTransacaoAtiva(transacao);
 
-        console.log(dado.nome + ": STATUS - " + dado.bloqueio + " / N. TRANS. LENDO: " + dado.contador + " / LISTA TRANS LENDO: " + dado.transBloqLeit.toString()
-                                                                                                       + " / LISTA TRANS ESCREVENDO: " + dado.transBloqEscri);
-    } else if (dado.bloqueio == "ReadLock"){
+        document.getElementById('resultado').textContent = "Transação " + transacao + ": OP WRITE-LOCK(" + dado.nome + ") - SUCESSO";
 
-        console.log(dado.nome + ": STATUS ANTERIOR - " + dado.bloqueio + " / N. TRANS. LENDO: " + dado.contador + " / LISTA TRANS LENDO: " + dado.transBloqLeit.toString()
-                                                                                                                + " / LISTA TRANS ESCREVENDO: " + dado.transBloqEscri);
-
-        if((dado.contador == 1) && (dado.transBloqLeit.indexOf(transacao) > -1)){
-            dado.bloqueio = "WriteLock";
-            dado.transBloqEscri = transacao;
+    } else if (dado.bloqueio == "ReadLock" && (dado.contador == 1) && (dado.transBloqLeit.indexOf(transacao) > -1)){
+            
             var pos = dado.transBloqLeit.indexOf(transacao);
             dado.transBloqLeit.splice(pos, 1);
             dado.contador = 0;
+
+            dado.bloqueio = "WriteLock";
+            dado.transBloqEscri = transacao;
         
-            console.log(dado.nome + ": STATUS POSTERIOR - " + dado.bloqueio + " / N. TRANS. LENDO: " + dado.contador + " / LISTA TRANS LENDO: " + dado.transBloqLeit.toString()
-                                                                                                                     + " / LISTA TRANS ESCREVENDO: " + dado.transBloqEscri);
-        } else {
-            //add alerta de deadlock
-            //no caso de ter mais de uma com o readlock, o q q faz??
-            console.log(dado.nome + " - NAO MODIFICADO, NOVA TRANSAÇÃO EM ESPERA");
-            addTransacaoEmEspera(transacao);
-        }
+            document.getElementById('resultado').textContent = "Transação " + transacao + ": OP WRITE-LOCK(" + dado.nome + ") UPGRADE - SUCESSO";
+        
     } else {
         if (waitDie) {
-            console.log("Protocolo Wait-Die")
             if (timestamps[transacao - 1] < timestamps[dado.transBloqEscri - 1]) {
-                console.log("Transação " + transacao + " em espera");
-                addTransacaoEmEspera(transacao);
+
+                document.getElementById('resultado').textContent = "WAIT-DIE: Transação " + transacao + " com TS = " + timestamps[transacao-1] + " em espera";
+
+                addTransacaoEmEspera(new TransacaoEspera(transacao, dado, "WriteLock(" + dado.nome +")"));
             } else {
-                console.log("Transação " + transacao + " restartada");
-                //libera o que ela ta bloqueando e encerra
+                
+                document.getElementById('resultado').textContent = "WAIT-DIE: Transação " + transacao + " com TS = " + timestamps[transacao-1] + " restartada";
+                restartarTransacao(transacao);
+                removeTransacao(transacao);
             }
         } else if (woundWait) {
-            console.log("Protocolo Wound-Wait")
             if (timestamps[transacao - 1] < timestamps[dado.transBloqEscri -1]) {
-                console.log("Transação " + dado.transBloqEscri + " restartada");
+                document.getElementById('resultado').textContent = "WOUND-WAIT: Transação " + transacao + " com TS = " + timestamps[transacao-1] + " restartada";
+
+                restartarTransacao(transacao);
+                removeTransacao(transacao);
             } else {
-                console.log("Transação " + transacao + " em espera");
-                addTransacaoEmEspera(transacao);
+                document.getElementById('resultado').textContent = "WOUND-WAIT: Transação " + transacao + " com TS = " + timestamps[transacao-1] + " em espera";
+                addTransacaoEmEspera(new TransacaoEspera(transacao, dado, "WriteLock(" + dado.nome +")"));
             }
         } else {
-            //add alerta de deadlock
-            console.log('NOVA TRANSACAO EM ESPERA');
-            addTransacaoEmEspera(transacao);
+            if (checarDeadlock(dado)) {
+                document.getElementById('resultado').textContent = "NO-PROTOCOL: DEADLOCK";
+                addTransacaoEmEspera(new TransacaoEspera(transacao, dado, "WriteLock(" + dado.nome + ")"));
+            } else {
+                document.getElementById('resultado').textContent = "Operação não realizada";
+                addTransacaoEmEspera(new TransacaoEspera(transacao, dado, "WriteLock(" + dado.nome +")"));
+            }
+            
         }
-        //criar array salvando um novo objeto transacaoespera, q tem: dado, transacao, timestamp e operacao
+
     } 
 
     updateCardTransBloq(dado);
 }
 
 function readItem(dado, transacao) {
-    console.log("READ-ITEM(" + dado.nome + ")");
     if (dado.transBloqLeit.indexOf(transacao) > -1) {
-        console.log(transacao + " pode ler " + dado);
+        document.getElementById('resultado').textContent = "Transação " + transacao + ": OP READ-ITEM(" + dado.nome + ") permitida";
+        console.log(transacao + " pode ler " + dado.nome);
     } else if (dado.transBloqEscri == transacao) {
-        console.log(transacao + " pode ler " + dado);
+        document.getElementById('resultado').textContent = "Transação " + transacao + ": OP READ-ITEM(" + dado.nome + ") permitida";
+        console.log(transacao + " pode ler " + dado.nome);
     } else {
-        console.log("Op não permitida");
+        document.getElementById('resultado').textContent = "OP NÃO PERMITIDA: Transação " + transacao + " não possui WRITELOCK ou READLOCK sobre o item " + dado.nome;
     }
 }
 
 function writeItem(dado, transacao) {
-    console.log("WRITE-ITEM(" + dado.nome + ")");
     if (dado.transBloqEscri == transacao) {
+        document.getElementById('resultado').textContent = "Transação " + transacao + ": OP WRITE-ITEM(" + dado.nome + ") permitida";
         console.log(transacao + " pode escrever em " + dado);
     } else {
-        console.log("Op não permitida");
+        document.getElementById('resultado').textContent = "OP NÃO PERMITIDA: Transação " + transacao + " não possui WRITELOCK sobre o item " + dado.nome;
     }
 }
 
@@ -360,11 +451,34 @@ function checkAcaoSelecionada(acao, transacao) {
             break;
 
         case "End":
-            //se a transação tiver free
-            removeTransacao(transacao);
+            if (transacaoLivre(transacao)) { 
+                removeTransacao(transacao);
+            } else {
+                document.getElementById('resultado').textContent = "OP NÃO PERMITIDA: Transação " + transacao + " possui bloqueio sobre itens de dados";
+            }
         default:
             break;
     }
+}
+
+function transacaoLivre(transacao) {
+    var livre = true;
+    dados.forEach(element => {
+        if(element.transBloqEscri == transacao || element.transBloqLeit.includes(transacao) || checarEspera(transacao)) {
+            livre = false;
+        }
+    });
+    return livre;
+}
+
+function checarEspera(transacaoSelecionada) {
+    var espera = false;
+    transacoesEmEspera.forEach(element => {
+        if (element.transacao == transacaoSelecionada) {
+            espera = true;
+        }
+    });
+    return espera;
 }
 
 function Enviar() {
@@ -374,15 +488,37 @@ function Enviar() {
     var acao = document.getElementById('acoes');
     var acaoSelecionada = acao.value;
 
-    checkAcaoSelecionada(acaoSelecionada.toString(), transacaoSelecionada.toString());
+    if(!checarEspera(transacaoSelecionada)){
+        checkAcaoSelecionada(acaoSelecionada.toString(), transacaoSelecionada.toString());
+    } else { 
+        document.getElementById('resultado').textContent = "OP NÃO PERMITIDA: Transação " + transacaoSelecionada + " em espera";
+    }
 }
+
+function desabilitar() {
+    waitDie = false;
+    woundWait = false;
+    document.getElementById('resultado').textContent =  "Protocolos desabilitados";
+    document.getElementById('desabilitado').style.background = "green"; 
+    document.getElementById('waitDie').style.background = "gray";
+    document.getElementById('woundWait').style.background = "gray";
+}
+
 
 function ativarWaitDie() {
     waitDie = true;
-    alert("Wait Die ativado! valor = " + waitDie);
+    woundWait = false;
+    document.getElementById('resultado').textContent =  "Protocolo Wait-Die ativado";
+    document.getElementById('desabilitado').style.background = "gray"; 
+    document.getElementById('waitDie').style.background = "green";
+    document.getElementById('woundWait').style.background = "gray";
 }
 
 function ativarWoundWait() {
     woundWait = true;
-    alert("Wound Wait ativado! valor = " + woundWait);
+    waitDie = false;
+    document.getElementById('resultado').textContent = "Protocolo Wound-Wait ativado";
+    document.getElementById('desabilitado').style.background = "gray"; 
+    document.getElementById('waitDie').style.background = "gray";
+    document.getElementById('woundWait').style.background = "green";
 }

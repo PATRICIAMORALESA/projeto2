@@ -16,9 +16,9 @@
     <div class="row">
         <div class="card-principal">
           <h2>Definir protocolo de impasse</h2>
-          <button id="desabilitado">Desabilitado</button>
-          <button id="waitDie" onclick="ativarWaitDie()">Wait-die</button>
-          <button id="woundWait" onclick="ativarWoundWait()">Wound-wait</button>
+          <button id="desabilitado" style="background: green;" onclick="desabilitar()">Desabilitado</button>
+          <button id="waitDie" style="background: gray;" onclick="ativarWaitDie()">Wait-die</button>
+          <button id="woundWait" style="background: gray;" onclick="ativarWoundWait()">Wound-wait</button>
         </div>
     </div>
     <div>
@@ -72,17 +72,17 @@
                             <tbody>
                                 <tr>
                                     <td id="itemX">X</td>
-                                    <td id="bloqueioX"></td>
+                                    <td id="bloqueioX">Unlock</td>
                                     <td id="transBloqX"></td>
                                 </tr>
                                 <tr>
                                     <td id="itemY">Y</td>
-                                    <td id="bloqueioY"></td>
+                                    <td id="bloqueioY">Unlock</td>
                                     <td id="transBloqY"></td>
                                 </tr>
                                 <tr>
                                     <td id="itemZ">Z</td>
-                                    <td id="bloqueioZ"></td>
+                                    <td id="bloqueioZ">Unlock</td>
                                     <td id="transBloqZ"></td>
                                 </tr>
                             </tbody>
@@ -127,6 +127,12 @@
                 </table>       
             </div>
           </div>
+        </div>
+        <div class="row">
+            <div class="card-principal" style="width: 20cm;">
+                <h2>Resultado</h2>
+                <label id="resultado"> </label>
+            </div>
         </div>
       </div>
       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
